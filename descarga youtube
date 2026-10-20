@@ -1,0 +1,112 @@
+descarga youtube
+
+Ruta:
+/Users/kon/Downloads/Musica
+
+
+./yt-dlp -f 399+140-1 --merge-output-format mp4 "https://www.youtube.com/watch?v=F6ZP5x6DSTU"
+./yt-dlp -f 399+140-2 --merge-output-format mp4 "https://www.youtube.com/watch?v=PxhV-C1C3AI"
+./yt-dlp -f 399+140-1 --merge-output-format mp4 "https://www.youtube.com/watch?v=6oC1_3eSQFM&t"
+./yt-dlp -f 399+140-1 --merge-output-format mp4 "https://www.youtube.com/watch?v=UqcDviy5Eng&t"
+
+
+./yt-dlp --list-formats "https://www.youtube.com/watch?v=6oC1_3eSQFM&t"
+./yt-dlp --list-formats "https://www.youtube.com/watch?v=F6ZP5x6DSTU"
+
+
+./yt-dlp --list-formats "https://www.youtube.com/watch?v=8R3ZsPGe9ho"
+
+./yt-dlp -f 399+139-1 --merge-output-format mp4 "https://www.youtube.com/watch?v=8R3ZsPGe9ho"
+
+Planet 9 chapter 6
+https://www.youtube.com/watch?v=2nZg4F1pPcc
+
+Listado de formatos:
+
+./yt-dlp --list-formats "https://www.youtube.com/watch?v=2nZg4F1pPcc"
+
+Listados de subtitulos:
+
+./yt-dlp --list-subs "https://www.youtube.com/watch?v=2nZg4F1pPcc"
+
+Hay que coger avc1 codec compatible con quicktime
+
+./yt-dlp -f 312+234-1 --merge-output-format mp4 "https://www.youtube.com/watch?v=2nZg4F1pPcc"
+
+
+Modo auto compatible
+./yt-dlp -S "vcodec:h264,res,acodec:m4a" --merge-output-format mp4 "https://www.youtube.com/watch?v=2nZg4F1pPcc"
+
+Inglés con subtitulos --> 
+./yt-dlp -S "lang:en,vcodec:h264,res:1080,acodec:m4a" --write-subs --write-auto-subs --sub-langs "es.*" --embed-subs --merge-output-format mp4 "https://www.youtube.com/watch?v=2nZg4F1pPcc"
+--> si falla hacerlo por pasos:
+# Paso 1: vídeo
+./yt-dlp -f "bv*[vcodec^=avc1][height<=1080]+ba[ext=m4a][language^=en]/bv*[vcodec^=avc1][height<=1080]+ba[ext=m4a]" \
+  --merge-output-format mp4 -o "video.%(ext)s" "https://www.youtube.com/watch?v=2nZg4F1pPcc"
+
+# Paso 2: solo subtítulos (cuando se pase el límite)
+./yt-dlp --skip-download --write-subs --write-auto-subs --sub-langs "es-US-orig" \
+  --convert-subs srt --sleep-subtitles 5 -o "video" "https://www.youtube.com/watch?v=2nZg4F1pPcc"
+
+# Paso 3: incrustarlos para QuickTime
+ffmpeg -i video.mp4 -i video.es-US-orig.srt -map 0 -map 1 -c copy -c:s mov_text \
+  -metadata:s:s:0 language=spa salida.mp4
+
+Planet 9. Charter 7
+
+https://www.youtube.com/watch?v=SkIiyHccL8Q
+
+# Paso 1: vídeo
+./yt-dlp -f "bv*[vcodec^=avc1][height<=1080]+ba[ext=m4a][language^=en]/bv*[vcodec^=avc1][height<=1080]+ba[ext=m4a]" \
+  --merge-output-format mp4 -o "video.%(ext)s" "https://www.youtube.com/watch?v=SkIiyHccL8Q"
+
+# Paso 2: solo subtítulos (cuando se pase el límite)
+./yt-dlp --skip-download --write-subs --write-auto-subs --sub-langs "es-US-orig" \
+  --convert-subs srt --sleep-subtitles 5 -o "video" "https://www.youtube.com/watch?v=SkIiyHccL8Q"
+
+# Paso 3: incrustarlos para QuickTime
+ffmpeg -i video.mp4 -i video.es-US-orig.srt -map 0 -map 1 -c copy -c:s mov_text \
+  -metadata:s:s:0 language=spa salida.mp4
+
+Planet 9. Charter 8 & 9
+
+https://www.youtube.com/watch?v=7nsBRiFosW0
+
+# Paso 1: vídeo
+./yt-dlp -f "bv*[vcodec^=avc1][height<=1080]+ba[ext=m4a][language^=en]/bv*[vcodec^=avc1][height<=1080]+ba[ext=m4a]" \
+  --merge-output-format mp4 -o "video.%(ext)s" "https://www.youtube.com/watch?v=7nsBRiFosW0"
+
+# Paso 2: solo subtítulos (cuando se pase el límite)
+./yt-dlp --skip-download --write-subs --write-auto-subs --sub-langs "es-orig" \
+  --convert-subs srt --sleep-subtitles 5 -o "video" "https://www.youtube.com/watch?v=7nsBRiFosW0"
+
+# Paso 3: incrustarlos para QuickTime
+ffmpeg -i video.mp4 -i video.es-orig.srt -map 0 -map 1 -c copy -c:s mov_text \
+  -metadata:s:s:0 language=spa salida.mp4
+
+Listados de subtitulos:
+
+./yt-dlp --list-subs "https://www.youtube.com/watch?v=7nsBRiFosW0"
+
+
+Music:
+
+./yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 0 -o "%(title)s.%(ext)s" --embed-thumbnail --embed-metadata "https://youtu.be/__6sIqZk-DA"
+
+./yt-dlp -x --audio-format mp3 --playlist-items 1 "https://www.youtube.com/watch?v=ILRCfeITBns&list=RDILRCfeITBns"
+
+./yt-dlp -x --audio-format mp3 --embed-thumbnail --embed-metadata --playlist-items 2-5 "https://www.youtube.com/watch?v=ILRCfeITBns&list=RDILRCfeITBns"
+
+Lista completa:
+
+./yt-dlp -x --audio-format mp3 --audio-quality 0 \
+       --embed-thumbnail --embed-metadata \
+       --yes-playlist \
+       -o "%(playlist_index)s - %(title)s.%(ext)s" \
+       "https://www.youtube.com/watch?v=Pq9syWwgSEA&list=RDGMEMYH9CUrFO7CfLJpaD7UR85w"
+
+
+Audio Houdini - Dua lipa
+https://www.youtube.com/watch?v=suAR1PYFNYA
+
+./yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 0 -o "%(title)s.%(ext)s" --embed-thumbnail --embed-metadata "https://www.youtube.com/watch?v=suAR1PYFNYA"

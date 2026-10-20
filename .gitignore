@@ -1,0 +1,22 @@
+# Credenciales (nunca al repositorio)
+.env
+
+# Binarios (se regeneran: swiftc / descargas de yt-dlp y ffmpeg)
+/ytdl
+/yt-dlp
+/ffmpeg
+/ffprobe
+
+# Descargas y carpeta de trabajo temporal
+/descargas/
+/trabajo/
+
+# Proyecto aparte: recortes de vídeo de la bicicleta (ffmpeg concat)
+/mylist.txt
+/ffmpeg div.txt
+
+# macOS
+.DS_Store
+
+# Herramientas
+/.codewhale/
