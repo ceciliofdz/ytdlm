@@ -14,6 +14,11 @@ Script de Swift para **macOS** que automatiza [`yt-dlp`](https://github.com/yt-d
   ```bash
   brew install ffmpeg
   ```
+- **node** (recomendado) — yt-dlp lo usa como runtime JavaScript para extraer todos los formatos de YouTube. Sin él funciona, pero avisa y puede ocultar formatos:
+
+  ```bash
+  brew install node
+  ```
 
 ## Compilación
 

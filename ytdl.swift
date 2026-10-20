@@ -161,6 +161,12 @@ func findExecutable(_ name: String) -> String? {
     return candidates.first { fm.isExecutableFile(atPath: $0) }
 }
 
+/// yt-dlp necesita un runtime JavaScript para extraer todos los formatos de YouTube.
+/// Usamos node si está instalado; si no, se omite (yt-dlp avisará y puede ocultar formatos).
+var jsRuntimeArgs: [String] {
+    findExecutable("node") != nil ? ["--js-runtimes", "node"] : []
+}
+
 // MARK: - Ejecutar procesos
 
 /// Ejecuta un proceso mostrando su salida en vivo y devolviéndola también como texto.
@@ -196,7 +202,7 @@ func runStreaming(_ exe: String, _ args: [String], env: [String: String]) -> (st
 
 /// Pide a yt-dlp el JSON con todos los formatos, subtítulos, etc.
 func fetchInfo(_ ytdlp: String, url: String, env: [String: String], cookies: String?) -> [String: Any]? {
-    var args = ["-J", "--no-playlist"]
+    var args = ["-J", "--no-playlist"] + jsRuntimeArgs
     if let c = cookies { args += ["--cookies-from-browser", c] }
     args.append(url)
 
@@ -352,7 +358,7 @@ func downloadAudio(_ ytdlp: String, url: String, env: [String: String], cookies:
         "--embed-thumbnail", "--embed-metadata",
         "--no-playlist", "--newline",
         "-o", base + ".%(ext)s",
-    ]
+    ] + jsRuntimeArgs
     if let c = cookies { args += ["--cookies-from-browser", c] }
     args.append(url)
 
@@ -662,7 +668,7 @@ func runApp() {
         "--no-playlist",
         "--newline",
         "-o", tmp + "/video.%(ext)s",
-    ] + cookieArgs + [url]
+    ] + jsRuntimeArgs + cookieArgs + [url]
 
     print("\n▶︎ Paso 1: vídeo + audio")
     print("  yt-dlp " + videoArgs.map(shellQuote).joined(separator: " ") + "\n")
@@ -683,7 +689,7 @@ func runApp() {
             "--sleep-subtitles", "5",
             "--no-playlist",
             "-o", tmp + "/video.%(ext)s",
-        ] + cookieArgs + [url]
+        ] + jsRuntimeArgs + cookieArgs + [url]
 
         print("\n▶︎ Paso 2: subtítulos (\(s.code))")
         print("  yt-dlp " + subArgs.map(shellQuote).joined(separator: " ") + "\n")
