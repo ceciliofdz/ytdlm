@@ -47,6 +47,12 @@ Sin opciones, el programa es **interactivo**: te pide la URL y te pregunta qué 
 ./ytdl --mp3 "https://www.youtube.com/watch?v=2nZg4F1pPcc"
 ```
 
+### Ver qué ofrece un vídeo (sin descargar)
+
+```bash
+./ytdl --list "https://www.youtube.com/watch?v=2nZg4F1pPcc"
+```
+
 ### Descargar y enviar a Telegram
 
 ```bash
@@ -62,6 +68,7 @@ Sin opciones, el programa es **interactivo**: te pide la URL y te pregunta qué 
 | `--audio <idioma>` | Idioma del audio (p. ej. `en`, `es`, `en-US`) |
 | `--subs <código\|none>` | Subtítulos (p. ej. `es`, `es-US`, `en-orig`) o `none` |
 | `--mp3` | Descarga solo el audio en MP3 (ignora `--quality` y `--subs`) |
+| `--list` | Muestra calidades (H.264), audio (AAC) y subtítulos del vídeo, sin descargar |
 | `--out`, `-o <carpeta>` | Carpeta de salida (por defecto: `<carpeta del programa>/descargas`) |
 | `--cookies <browser>` | Usa las cookies del navegador (`safari`, `chrome`, `firefox`…) |
 | `--ytdlp <ruta>` | Ruta al ejecutable `yt-dlp` |

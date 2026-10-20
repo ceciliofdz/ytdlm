@@ -21,6 +21,7 @@ Opciones:
   --audio <idioma>     Idioma del audio (p. ej. en, es, en-US)
   --subs <código|none> Subtítulos (p. ej. es, es-US, en-orig) o "none"
   --mp3                Descarga solo el audio en MP3 (ignora --quality y --subs)
+  --list               Muestra calidades (H.264), audio (AAC) y subtítulos, sin descargar
   --out, -o <carpeta>  Carpeta de salida (por defecto: <carpeta del programa>/descargas)
   --cookies <browser>  Usa las cookies del navegador (safari, chrome, firefox...)
   --ytdlp <ruta>       Ruta al ejecutable yt-dlp
@@ -34,6 +35,9 @@ Ejemplo sin preguntas:
 
 Solo audio en MP3:
   ytdl --mp3 "https://www.youtube.com/watch?v=2nZg4F1pPcc"
+
+Ver qué ofrece un vídeo (sin descargar):
+  ytdl --list "https://www.youtube.com/watch?v=2nZg4F1pPcc"
 """
 
 // MARK: - Utilidades
@@ -93,6 +97,7 @@ struct Options {
     var subs: String?
     var quality: String?
     var mp3 = false
+    var list = false
     var keep = false
     var telegram: Bool? = nil
 }
@@ -117,6 +122,8 @@ func parseArgs() -> Options {
             o.subs = it.next()
         case "--mp3":
             o.mp3 = true
+        case "--list":
+            o.list = true
         case "--quality":
             o.quality = it.next()
         case "--keep":
@@ -432,6 +439,82 @@ func handleTelegram(path: String, caption: String, auto: Bool?, appDir: String) 
     }
 }
 
+// MARK: - Modo --list
+
+/// Muestra lo que ofrece un vídeo (alturas H.264, audio AAC y subtítulos) sin descargar nada.
+func listInfo(_ info: [String: Any]) {
+    let title = (info["title"] as? String) ?? "(sin título)"
+    var header = "🎬 \(title)"
+    if let id = info["id"] as? String { header += "  [\(id)]" }
+    print(header)
+    if let ch = info["channel"] as? String { print("📺 \(ch)") }
+    if let dur = info["duration"] as? Int {
+        print("⏱ \(dur / 3600)h \((dur % 3600) / 60)m \(dur % 60)s")
+    }
+
+    let formats = (info["formats"] as? [[String: Any]]) ?? []
+
+    // Vídeo
+    let heights = avcHeights(formats)
+    if heights.isEmpty {
+        let allMax = formats.compactMap { $0["height"] as? Int }.max()
+        if let m = allMax {
+            print("\n📹 Vídeo: sin H.264 (avc1). Máx. \(m)p en otro códec (VP9/AV1), que QuickTime no abre.")
+        } else {
+            print("\n📹 Vídeo: sin pistas de vídeo.")
+        }
+    } else {
+        print("\n📹 Vídeo (H.264/avc1, compatible con QuickTime): " + heights.map { "\($0)p" }.joined(separator: ", "))
+    }
+
+    // Audio
+    let audios = audioTracks(formats)
+    if audios.isEmpty {
+        print("\n🔊 Audio: sin pistas AAC (mp4a).")
+    } else {
+        let labels = audios.map { t -> String in
+            let lang = t.lang.isEmpty ? "(sin etiqueta)" : t.lang
+            return t.note.isEmpty ? lang : "\(lang) — \(t.note)"
+        }
+        print("\n🔊 Audio (AAC/mp4a): " + labels.joined(separator: " | "))
+    }
+
+    // Subtítulos
+    let subs = subTracks(info)
+    if subs.isEmpty {
+        print("\n💬 Subtítulos: ninguno.")
+    } else {
+        let manual = subs.filter { !$0.auto }
+        let auto = subs.filter { $0.auto }
+        print("\n💬 Subtítulos:")
+        print("   Manuales (\(manual.count)): " + (manual.isEmpty ? "ninguno" : manual.map { $0.code }.joined(separator: ", ")))
+        if auto.isEmpty {
+            print("   Automáticos: ninguno")
+        } else {
+            let shown = auto.filter { $0.code.hasSuffix("-orig") || $0.code.hasPrefix("es") || $0.code.hasPrefix("en") }
+            var line = "   Automáticos (\(auto.count)): " + shown.map { $0.code }.joined(separator: ", ")
+            if shown.count < auto.count {
+                line += "  (+ \(auto.count - shown.count) traducciones más)"
+            }
+            print(line)
+        }
+    }
+    print("\nDescargar:  ./ytdl --quality <altura> --audio <idioma> --subs <código> \"<URL>\"")
+}
+
+/// Modo --list: obtiene la información y la muestra; no descarga ni necesita ffmpeg.
+func runList(ytdlp: String, opts: Options) {
+    let env = ProcessInfo.processInfo.environment
+    let url = opts.url ?? prompt("URL del vídeo: ")
+    guard !url.isEmpty else { fail("No has indicado ninguna URL.") }
+
+    print("🔎 Obteniendo información del vídeo…")
+    guard let info = fetchInfo(ytdlp, url: url, env: env, cookies: opts.cookies) else {
+        fail("No se pudo obtener la información. Revisa la URL o actualiza yt-dlp (yt-dlp -U).")
+    }
+    listInfo(info)
+}
+
 // MARK: - Programa principal
 
 func runApp() {
@@ -440,6 +523,13 @@ func runApp() {
     guard let ytdlp = opts.ytdlpPath ?? findExecutable("yt-dlp") else {
         fail("No encuentro yt-dlp. Ponlo junto a este programa, en tu PATH, o usa --ytdlp /ruta/yt-dlp")
     }
+
+    // Modo --list: solo informa de lo que ofrece el vídeo; no descarga ni necesita ffmpeg.
+    if opts.list {
+        runList(ytdlp: ytdlp, opts: opts)
+        return
+    }
+
     guard let ffmpeg = findExecutable("ffmpeg") else {
         fail("No encuentro ffmpeg (hace falta para fusionar y embeber subtítulos). Instálalo con: brew install ffmpeg")
     }
